@@ -6,7 +6,7 @@ libs = ["lib"]
 [dependencies]
 forge-std = { version = "1.0.0" }
 
-[remappings]
+[profile.remappings]
 forge-std="lib/forge-std/src"
 
 
