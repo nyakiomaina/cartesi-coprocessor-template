@@ -2,8 +2,11 @@
 pragma solidity ^0.8.0;
 
 import "./ICoprocessor.sol";
+import { LibMerkle32 } from "../lib/cartesi/contracts/library/LibMerkle32.sol";
 
 contract CoprocessorCaller {
+    using LibMerkle32 for bytes32[];
+
     ICoprocessor public coprocessor;
     bytes32 public machineHash;
 
@@ -30,4 +33,11 @@ contract CoprocessorCaller {
     }
 
     event ResultReceived(bytes output);
+
+    function singleCheck(bytes calldata data) public pure returns (bytes32) {
+        bytes32 hash = keccak256(data);
+        bytes32[] memory foo;
+        foo[0] = hash;
+        return LibMerkle32.merkleRoot(foo, 63);
+    }
 }
