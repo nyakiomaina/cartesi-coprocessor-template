@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "./ICoprocessor.sol";
-import { LibMerkle32 } from "../lib/cartesi/contracts/library/LibMerkle32.sol";
+import { LibMerkle32 } from "../lib/rollups-contracts/contracts/library/LibMerkle32.sol";
 
 contract CoprocessorCaller {
     using LibMerkle32 for bytes32[];
