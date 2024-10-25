@@ -10,7 +10,7 @@ contract CoprocessorCaller is ICoprocessorCallback {
     bytes32 public machineHash;
     bytes public lastResult;
 
-    address constant TASK_ISSUER_CONTRACT = 0x32A5C3F0ac48691F58C1D227Ab4B2909f1AC1Fb1;
+    address constant TASK_ISSUER_CONTRACT = 0xB819BA4c5d2b64d07575ff4B30d3e0Eca219BFd5;
 
     constructor(address _coprocessorAddress, bytes32 _machineHash) {
         coprocessor = ICoprocessor(_coprocessorAddress);
