@@ -10,7 +10,7 @@ contract CoprocessorCaller is ICoprocessorCallback {
     bytes32 public machineHash;
     bytes public lastResult;
 
-    address constant TASK_ISSUER_CONTRACT = 0xB819BA4c5d2b64d07575ff4B30d3e0Eca219BFd5;
+    mapping(bytes32 => bool) public computationSent;
 
     constructor(address _coprocessorAddress, bytes32 _machineHash) {
         coprocessor = ICoprocessor(_coprocessorAddress);
@@ -18,6 +18,10 @@ contract CoprocessorCaller is ICoprocessorCallback {
     }
 
     function callCoprocessor(bytes calldata input) external {
+        bytes32 inputHash = keccak256(input);
+
+        computationSent[inputHash] = true;
+
         coprocessor.issueTask(machineHash, input, address(this));
     }
 
@@ -26,7 +30,11 @@ contract CoprocessorCaller is ICoprocessorCallback {
         bytes32 _payloadHash,
         bytes[] calldata outputs
     ) external override {
-        require(msg.sender == TASK_ISSUER_CONTRACT, "Unauthorized caller");
+        require(msg.sender == address(coprocessor), "Unauthorized caller");
+
+        require(_machineHash == machineHash, "Machine hash mismatch");
+
+        require(computationSent[_payloadHash] == true, "Computation not found");
 
         bytes memory concatenatedOutputs;
         for (uint256 i = 0; i < outputs.length; i++) {
@@ -35,6 +43,9 @@ contract CoprocessorCaller is ICoprocessorCallback {
         lastResult = concatenatedOutputs;
 
         emit ResultReceived(concatenatedOutputs);
+
+        // clean up the mapping
+        delete computationSent[_payloadHash];
     }
 
     event ResultReceived(bytes output);
