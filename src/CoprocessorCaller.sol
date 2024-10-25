@@ -2,21 +2,18 @@
 pragma solidity ^0.8.0;
 
 import "./ICoprocessor.sol";
-import { LibMerkle32 } from "../lib/rollups-contracts/contracts/library/LibMerkle32.sol";
+import "./ICoprocessorCallback.sol";
 
-contract CoprocessorCaller {
-    using LibMerkle32 for bytes32[];
+contract CoprocessorCaller is ICoprocessorCallback {
 
     ICoprocessor public coprocessor;
     bytes32 public machineHash;
-
     bytes public lastResult;
 
-    address public coprocessorAddress;
+    address constant TASK_ISSUER_CONTRACT = 0x32A5C3F0ac48691F58C1D227Ab4B2909f1AC1Fb1;
 
     constructor(address _coprocessorAddress, bytes32 _machineHash) {
         coprocessor = ICoprocessor(_coprocessorAddress);
-        coprocessorAddress = _coprocessorAddress;
         machineHash = _machineHash;
     }
 
@@ -24,20 +21,22 @@ contract CoprocessorCaller {
         coprocessor.issueTask(machineHash, input, address(this));
     }
 
-    function onResult(bytes calldata output) external {
-        require(msg.sender == coprocessorAddress, "Unauthorized caller");
+    function coprocessorCallbackOutputsOnly(
+        bytes32 _machineHash,
+        bytes32 _payloadHash,
+        bytes[] calldata outputs
+    ) external override {
+        require(msg.sender == TASK_ISSUER_CONTRACT, "Unauthorized caller");
 
-        lastResult = output;
+        bytes memory concatenatedOutputs;
+        for (uint256 i = 0; i < outputs.length; i++) {
+            concatenatedOutputs = abi.encodePacked(concatenatedOutputs, outputs[i]);
+        }
+        lastResult = concatenatedOutputs;
 
-        emit ResultReceived(output);
+        emit ResultReceived(concatenatedOutputs);
     }
 
     event ResultReceived(bytes output);
 
-    function singleCheck(bytes calldata data) public pure returns (bytes32) {
-        bytes32 hash = keccak256(data);
-        bytes32[] memory foo;
-        foo[0] = hash;
-        return LibMerkle32.merkleRoot(foo, 63);
-    }
 }
