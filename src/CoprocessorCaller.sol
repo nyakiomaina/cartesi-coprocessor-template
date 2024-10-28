@@ -5,7 +5,6 @@ import "./ICoprocessor.sol";
 import "./ICoprocessorCallback.sol";
 
 contract CoprocessorCaller is ICoprocessorCallback {
-
     ICoprocessor public coprocessor;
     bytes32 public machineHash;
     bytes public lastResult;
@@ -25,11 +24,10 @@ contract CoprocessorCaller is ICoprocessorCallback {
         coprocessor.issueTask(machineHash, input, address(this));
     }
 
-    function coprocessorCallbackOutputsOnly(
-        bytes32 _machineHash,
-        bytes32 _payloadHash,
-        bytes[] calldata outputs
-    ) external override {
+    function coprocessorCallbackOutputsOnly(bytes32 _machineHash, bytes32 _payloadHash, bytes[] calldata outputs)
+        external
+        override
+    {
         require(msg.sender == address(coprocessor), "Unauthorized caller");
 
         require(_machineHash == machineHash, "Machine hash mismatch");
@@ -49,5 +47,4 @@ contract CoprocessorCaller is ICoprocessorCallback {
     }
 
     event ResultReceived(bytes output);
-
 }
